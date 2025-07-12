@@ -1,0 +1,21 @@
+version: '3'
+services:
+  backend:
+    build:
+      context: ./prometheus-chat-api  # path to your FastAPI backend Dockerfile
+    container_name: backend
+    env_file:
+      - ./prometheus-chat-api/.env
+    ports:
+      - "8000:8000"
+
+  frontend:
+    build:
+      context: ./prometheus-chat-frontend  # path to your React frontend Dockerfile
+    container_name: frontend
+    environment:
+      - REACT_APP_API_URL=http://backend:8000/ask
+    ports:
+      - "8080:80"
+    depends_on:
+      - backend
