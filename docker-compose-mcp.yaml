@@ -1,0 +1,46 @@
+version: '3'
+services:
+  backend:
+    build:
+      context: ./prometheus-chat-api
+    container_name: backend
+    env_file:
+      - ./prometheus-chat-api/.env
+    environment:
+      - MCP_URL=http://mcp:9876/.well-known/model-context
+      # PROMETHEUS_URL, LLM_API_KEY, LLM_MODEL, etc should also be in .env
+    ports:
+      - "8000:8000"
+    depends_on:
+      - mcp
+
+  frontend:
+    build:
+      context: ./prometheus-chat-frontend
+    container_name: frontend
+    environment:
+      - REACT_APP_API_URL=http://backend:8000/ask
+    ports:
+      - "8080:80"
+    depends_on:
+      - backend
+
+  mcp:
+    image: pab1it0/prometheus-mcp-server
+    container_name: mcp
+    environment:
+      - PROM_URL=http://prometheus:9090     # << Set to your Prometheus container's name or URL!
+    ports:
+      - "9876:9876"
+    depends_on:
+      - prometheus
+
+  # Optionally, add Prometheus here if you want it managed by Compose too:
+  # prometheus:
+  #   image: prom/prometheus
+  #   container_name: prometheus
+  #   volumes:
+  #     - ./prometheus-data:/prometheus
+  #     - ./prometheus.yml:/etc/prometheus/prometheus.yml
+  #   ports:
+  #     - "9090:9090"
